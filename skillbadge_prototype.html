@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillBadge BF — Prototype Phase 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --green: #00e5a0;
+    --green-dim: rgba(0,229,160,0.12);
+    --green-glow: rgba(0,229,160,0.3);
+    --blue: #3b82f6;
+    --blue-dim: rgba(59,130,246,0.12);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --purple: #a855f7;
+    --text: #f0f4ff;
+    --text2: #8b9ab8;
+    --text3: #5a6a88;
+    --expert: #00e5a0;
+    --inter: #3b82f6;
+    --debut: #f59e0b;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND MESH ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(0,229,160,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 110%, rgba(59,130,246,0.06) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,14,26,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 60px;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 17px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green-glow);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(.85)} }
+
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .nav-tab {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 18px;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text2);
+    transition: all .2s;
+  }
+  .nav-tab.active {
+    background: var(--green);
+    color: #0a0e1a;
+    font-weight: 700;
+    box-shadow: 0 0 16px var(--green-glow);
+  }
+  .nav-tab:hover:not(.active) {
+    background: var(--border);
+    color: var(--text);
+  }
+
+  .chain-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--green);
+    background: var(--green-dim);
+    border: 1px solid rgba(0,229,160,.2);
+    border-radius: 6px;
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .chain-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  /* ── VIEWS ── */
+  .view { display: none; padding: 32px; max-width: 960px; margin: 0 auto; position: relative; z-index:1; }
+  .view.active { display: block; animation: fadeUp .35s ease; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+  }
+
+  /* ── STATS ROW ── */
+  .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    transition: border-color .2s;
+  }
+  .stat-card:hover { border-color: var(--border2); }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-label { font-size: 12px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; }
+
+  /* ── FORM ── */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 7px; }
+  .form-group.full { grid-column: 1/-1; }
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  input, select, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px var(--green-dim);
+  }
+  select option { background: var(--surface2); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 11px 22px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    transition: all .2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary {
+    background: var(--green);
+    color: #0a0e1a;
+    box-shadow: 0 0 20px var(--green-glow);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 30px rgba(0,229,160,.45); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--border2); background: var(--surface); }
+  .btn-blue {
+    background: var(--blue);
+    color: white;
+  }
+  .btn-blue:hover { opacity:.88; }
+  .btn-row { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+
+  /* ── BADGE LEVELS ── */
+  .badge-level {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .level-expert { background: rgba(0,229,160,.15); color: var(--expert); border: 1px solid rgba(0,229,160,.3); }
+  .level-inter { background: rgba(59,130,246,.15); color: var(--inter); border: 1px solid rgba(59,130,246,.3); }
+  .level-debut { background: rgba(245,158,11,.15); color: var(--debut); border: 1px solid rgba(245,158,11,.3); }
+
+  /* ── BADGE LIST ── */
+  .badge-list { display: flex; flex-direction: column; gap: 10px; }
+  .badge-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-color .2s, transform .15s;
+  }
+  .badge-item:hover { border-color: var(--border2); transform: translateX(2px); }
+  .badge-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .badge-info { flex: 1; min-width: 0; }
+  .badge-name { font-family:'Syne',sans-serif; font-weight:700; font-size:14px; }
+  .badge-sub { font-size:12px; color:var(--text3); margin-top:2px; }
+  .badge-meta {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .badge-date { font-size:12px; color:var(--text3); }
+  .tx-hash {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--green);
+    background: var(--green-dim);
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin-top: 4px;
+    display: inline-block;
+    cursor: pointer;
+  }
+  .tx-hash:hover { background: rgba(0,229,160,.22); }
+
+  /* ── PORTFOLIO PROFILE ── */
+  .profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .profile-info { display: flex; align-items: center; gap: 18px; }
+  .avatar {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--green), var(--blue));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: #0a0e1a;
+    flex-shrink: 0;
+  }
+  .profile-name { font-family:'Syne',sans-serif; font-weight:800; font-size:22px; }
+  .profile-address { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text3); margin-top:4px; }
+  .score-box {
+    background: linear-gradient(135deg, rgba(0,229,160,.15), rgba(0,229,160,.05));
+    border: 1px solid rgba(0,229,160,.3);
+    border-radius: var(--radius);
+    padding: 16px 24px;
+    text-align: center;
+    min-width: 130px;
+  }
+  .score-label { font-size:11px; color:var(--green); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
+  .score-num {
+    font-family:'Syne',sans-serif;
+    font-weight:800;
+    font-size:32px;
+    color:var(--green);
+    line-height:1;
+    text-shadow: 0 0 20px var(--green-glow);
+  }
+  .score-sub { font-size:11px; color:var(--text3); margin-top:4px; }
+
+  .mini-stats { display:flex; gap:16px; margin-top:10px; }
+  .mini-stat {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 18px;
+    text-align: center;
+  }
+  .mini-stat-num { font-family:'Syne',sans-serif; font-weight:700; font-size:20px; }
+  .mini-stat-label { font-size:11px; color:var(--text3); margin-top:2px; }
+
+  .skill-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .skill-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    transition: border-color .2s, transform .15s;
+  }
+  .skill-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .skill-card-top { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .skill-title { font-family:'Syne',sans-serif; font-weight:700; font-size:14px; }
+  .skill-sub { font-size:12px; color:var(--text3); }
+  .skill-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+  .skill-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  .action-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── RECRUITER ── */
+  .search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .search-input-wrap {
+    flex: 1;
+    position: relative;
+  }
+  .search-input-wrap input {
+    padding-left: 42px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 16px;
+  }
+
+  .verified-banner {
+    background: linear-gradient(135deg, rgba(0,229,160,.1), rgba(0,229,160,.04));
+    border: 1px solid rgba(0,229,160,.35);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+    animation: fadeUp .4s ease;
+  }
+  .verified-icon {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    color: #0a0e1a;
+  }
+  .verified-title { font-family:'Syne',sans-serif; font-weight:700; font-size:15px; color:var(--green); }
+  .verified-addr { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text3); margin-top:2px; }
+  .verified-chips { display:flex; gap:14px; margin-top:10px; flex-wrap:wrap; }
+  .verified-chip { font-size:12px; color:var(--green); display:flex; align-items:center; gap:5px; }
+  .verified-chip::before { content:'✓'; font-weight:700; }
+
+  .section-title {
+    font-family:'Syne',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--text3);
+    margin-bottom:14px;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--surface);
+    border: 1px solid rgba(0,229,160,.4);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    font-size: 14px;
+    color: var(--text);
+    box-shadow: 0 8px 30px rgba(0,0,0,.4);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateX(120%);
+    transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+    max-width: 320px;
+  }
+  .toast.show { transform: translateX(0); }
+  .toast-icon { font-size: 18px; }
+
+  /* ── RECENT EMISSIONS ── */
+  .emission-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .emission-item:last-child { border-bottom: none; }
+  .emission-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+  }
+  .emission-text { flex:1; font-size:13px; }
+  .emission-link {
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color: var(--blue);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .emission-date { font-size:11px; color:var(--text3); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(6px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s;
+  }
+  .modal-overlay.open { opacity:1; pointer-events:all; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 18px;
+    padding: 32px;
+    width: 440px;
+    max-width: 90vw;
+    transform: scale(.94) translateY(10px);
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+    position: relative;
+  }
+  .modal-overlay.open .modal { transform: scale(1) translateY(0); }
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    width: 30px; height: 30px;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nft-preview {
+    background: linear-gradient(135deg, #0a1628, #0d2138);
+    border: 1px solid rgba(0,229,160,.25);
+    border-radius: var(--radius);
+    padding: 28px;
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .nft-preview::before {
+    content:'';
+    position:absolute;
+    inset:0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(0,229,160,.12) 0%, transparent 70%);
+  }
+  .nft-badge-icon { font-size: 52px; margin-bottom: 12px; position:relative; }
+  .nft-title { font-family:'Syne',sans-serif; font-weight:800; font-size:22px; margin-bottom:4px; }
+  .nft-org { font-size:13px; color:var(--text3); margin-bottom:12px; }
+  .nft-chain {
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--green);
+    background: var(--green-dim);
+    border-radius:6px;
+    padding:6px 12px;
+    display:inline-block;
+  }
+
+  /* RESPONSIVE */
+  @media(max-width:600px) {
+    .topbar { padding:0 16px; }
+    .view { padding:20px 16px; }
+    .form-row { grid-template-columns:1fr; }
+    .skill-grid { grid-template-columns:1fr; }
+    .stats-row { grid-template-columns:1fr 1fr; }
+    .profile-header { flex-direction:column; align-items:flex-start; }
+    .nav-tab { padding:6px 12px; font-size:12px; }
+  }
+
+  /* ── EMIT ANIMATION ── */
+  @keyframes blockchain-send {
+    0%{opacity:1;transform:scale(1)}
+    30%{transform:scale(.97)}
+    60%{opacity:.7}
+    100%{opacity:1;transform:scale(1)}
+  }
+  .btn-emitting { animation: blockchain-send .7s ease; }
+
+  /* ── SHARE MODAL ── */
+  .share-link-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--green);
+    word-break: break-all;
+    margin: 14px 0;
+    cursor: text;
+    user-select: all;
+  }
+
+  /* ── QR placeholder ── */
+  .qr-placeholder {
+    width: 140px; height: 140px;
+    margin: 0 auto 12px;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 70px;
+    padding: 10px;
+  }
+
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 16px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    SkillBadge BF
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('formateur')">🎓 Formateur</button>
+    <button class="nav-tab" onclick="switchView('apprenant')">👤 Apprenant</button>
+    <button class="nav-tab" onclick="switchView('recruteur')">🔍 Recruteur</button>
+  </div>
+  <div class="chain-badge">Sepolia Testnet</div>
+</div>
+
+<!-- ══════════ VIEW: FORMATEUR ══════════ -->
+<div class="view active" id="view-formateur">
+
+  <div style="margin-bottom:24px;">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:24px;">Tableau de bord</div>
+    <div style="color:var(--text3);font-size:14px;margin-top:4px;">Jean-Baptiste Kaboré — Institut TechBF, Ouagadougou</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--blue)" id="stat-emis">47</div>
+      <div class="stat-label">Badges émis</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--green)" id="stat-apprenants">32</div>
+      <div class="stat-label">Apprenants certifiés</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--purple)" id="stat-actifs">44</div>
+      <div class="stat-label">Badges actifs</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🏅 Créer un nouveau badge</div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Domaine</label>
+        <select id="f-domaine">
+          <option>Développement Web</option>
+          <option>Développement Mobile</option>
+          <option>Design UI/UX</option>
+          <option>Data & IA</option>
+          <option>Cybersécurité</option>
+          <option>DevOps</option>
+          <option>Base de données</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Niveau</label>
+        <select id="f-niveau">
+          <option value="Expert">Expert</option>
+          <option value="Intermédiaire">Intermédiaire</option>
+          <option value="Débutant">Débutant</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Compétence</label>
+        <input type="text" id="f-competence" placeholder="ex : React.js — Création d'application SPA">
+      </div>
+      <div class="form-group">
+        <label>Projet validé (lien GitHub)</label>
+        <input type="text" id="f-projet" placeholder="https://github.com/...">
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:14px;">
+      <label>Apprenant (wallet ou email)</label>
+      <input type="text" id="f-apprenant" placeholder="0xA3F2...9B01 ou email@exemple.bf">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="previewNFT()">👁 Prévisualiser le badge NFT</button>
+      <button class="btn btn-primary" id="btn-emit" onclick="emettreBlockchain()">
+        ⬡ Émettre sur la Blockchain
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📡 Badges récemment émis</div>
+    <div id="emissions-list">
+      <div class="emission-item">
+        <div class="emission-dot"></div>
+        <div class="emission-text"><strong>HTML/CSS</strong> <span class="badge-level level-debut">Débutant</span> → Amina Diallo</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="emission-date">07/04/2026</div>
+          <div class="emission-link">Voir TX ↗</div>
+        </div>
+      </div>
+      <div class="emission-item">
+        <div class="emission-dot"></div>
+        <div class="emission-text"><strong>Flutter</strong> <span class="badge-level level-expert">Expert</span> → Ibrahim Sawadogo</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="emission-date">03/04/2026</div>
+          <div class="emission-link">Voir TX ↗</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ VIEW: APPRENANT ══════════ -->
+<div class="view" id="view-apprenant">
+
+  <div class="card">
+    <div class="profile-header">
+      <div class="profile-info">
+        <div class="avatar">AO</div>
+        <div>
+          <div class="profile-name">Aminata Ouédraogo</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">aminata.o@skillbadge.bf</div>
+          <div class="profile-address">skillbadge.bf/p/0xA3F2...9B01</div>
+          <div class="mini-stats" style="margin-top:10px;">
+            <div class="mini-stat">
+              <div class="mini-stat-num" id="stat-badges-count">5</div>
+              <div class="mini-stat-label">Badges</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-num" style="color:var(--green)" id="stat-valides-count">5</div>
+              <div class="mini-stat-label">Validés</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="score-box">
+        <div class="score-label">Score de confiance</div>
+        <div class="score-num" id="score-display">78<span style="font-size:16px;color:var(--text3)">/100</span></div>
+        <div class="score-sub">Mis à jour en temps réel</div>
+      </div>
+    </div>
+
+    <div class="skill-grid" id="skill-grid">
+      <div class="skill-card">
+        <div class="skill-card-top">
+          <span class="badge-level level-expert">Expert</span>
+        </div>
+        <div class="skill-title">Développement Web</div>
+        <div class="skill-sub">React.js SPA — Proj. E-commerce</div>
+        <div class="skill-bar"><div class="skill-bar-fill" style="width:100%;background:var(--expert)"></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-card-top">
+          <span class="badge-level level-inter">Interméd.</span>
+        </div>
+        <div class="skill-title">Design UI/UX</div>
+        <div class="skill-sub">Figma — App mobile santé</div>
+        <div class="skill-bar"><div class="skill-bar-fill" style="width:65%;background:var(--inter)"></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-card-top">
+          <span class="badge-level level-inter">Interméd.</span>
+        </div>
+        <div class="skill-title">Développement Mobile</div>
+        <div class="skill-sub">Flutter — App de paiement</div>
+        <div class="skill-bar"><div class="skill-bar-fill" style="width:65%;background:var(--inter)"></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-card-top">
+          <span class="badge-level level-debut">Débutant</span>
+        </div>
+        <div class="skill-title">Data & IA</div>
+        <div class="skill-sub">Python Pandas — Analyse CSV</div>
+        <div class="skill-bar"><div class="skill-bar-fill" style="width:30%;background:var(--debut)"></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-card-top">
+          <span class="badge-level level-debut">Débutant</span>
+        </div>
+        <div class="skill-title">Cybersécurité</div>
+        <div class="skill-sub">OWASP Top 10 — Audit basique</div>
+        <div class="skill-bar"><div class="skill-bar-fill" style="width:30%;background:var(--debut)"></div></div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn btn-primary" onclick="ouvrirShare()">↗ Partager mon portfolio</button>
+      <button class="btn btn-ghost" onclick="showQR()">⊞ QR Code</button>
+      <button class="btn btn-ghost" onclick="toast('Export PDF en cours…','📄')">⬇ Export PDF</button>
+      <button class="btn btn-ghost" onclick="switchView('recruteur')">✓ Vérifier tous mes badges</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔗 Mes badges certifiés</div>
+    <div class="badge-list" id="apprenant-badges">
+      <div class="badge-item">
+        <div class="badge-icon" style="background:rgba(0,229,160,.12)">💻</div>
+        <div class="badge-info">
+          <div class="badge-name">React.js <span class="badge-level level-expert" style="font-size:10px">Expert</span></div>
+          <div class="badge-sub">TechBF Institute</div>
+        </div>
+        <div class="badge-meta">
+          <div class="badge-date">09/04/2026</div>
+          <div class="tx-hash" onclick="toast('TX: 0x8A2F…copiée','✓')">0x8A2F…</div>
+        </div>
+      </div>
+      <div class="badge-item">
+        <div class="badge-icon" style="background:rgba(59,130,246,.12)">📱</div>
+        <div class="badge-info">
+          <div class="badge-name">Flutter <span class="badge-level level-inter" style="font-size:10px">Interméd.</span></div>
+          <div class="badge-sub">BootcampBF</div>
+        </div>
+        <div class="badge-meta">
+          <div class="badge-date">15/03/2026</div>
+          <div class="tx-hash" onclick="toast('TX: 0x4C7D…copiée','✓')">0x4C7D…</div>
+        </div>
+      </div>
+      <div class="badge-item">
+        <div class="badge-icon" style="background:rgba(168,85,247,.12)">🎨</div>
+        <div class="badge-info">
+          <div class="badge-name">Figma <span class="badge-level level-inter" style="font-size:10px">Interméd.</span></div>
+          <div class="badge-sub">DesignHub Ouaga</div>
+        </div>
+        <div class="badge-meta">
+          <div class="badge-date">02/02/2026</div>
+          <div class="tx-hash" onclick="toast('TX: 0x1E9B…copiée','✓')">0x1E9B…</div>
+        </div>
+      </div>
+      <div class="badge-item">
+        <div class="badge-icon" style="background:rgba(245,158,11,.12)">🐍</div>
+        <div class="badge-info">
+          <div class="badge-name">Python <span class="badge-level level-debut" style="font-size:10px">Débutant</span></div>
+          <div class="badge-sub">DataSchool BF</div>
+        </div>
+        <div class="badge-meta">
+          <div class="badge-date">10/01/2026</div>
+          <div class="tx-hash" onclick="toast('TX: 0x6F3A…copiée','✓')">0x6F3A…</div>
+        </div>
+      </div>
+      <div class="badge-item">
+        <div class="badge-icon" style="background:rgba(239,68,68,.12)">🔒</div>
+        <div class="badge-info">
+          <div class="badge-name">OWASP <span class="badge-level level-debut" style="font-size:10px">Débutant</span></div>
+          <div class="badge-sub">CyberBF Academy</div>
+        </div>
+        <div class="badge-meta">
+          <div class="badge-date">05/12/2025</div>
+          <div class="tx-hash" onclick="toast('TX: 0x2D8C…copiée','✓')">0x2D8C…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ VIEW: RECRUTEUR ══════════ -->
+<div class="view" id="view-recruteur">
+
+  <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:24px;margin-bottom:6px;">Portail Vérification Recruteur</div>
+  <div style="color:var(--text3);font-size:14px;margin-bottom:24px;">Vérifiez l'authenticité des badges en temps réel sur la blockchain</div>
+
+  <div class="search-box">
+    <div class="search-input-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="rec-input" placeholder="URL portfolio ou adresse 0x…" value="0xA3F2...9B01">
+    </div>
+    <button class="btn btn-primary" onclick="verifier()">Vérifier</button>
+  </div>
+
+  <div id="verified-result" style="display:none">
+    <div class="verified-banner">
+      <div class="verified-icon">✓</div>
+      <div>
+        <div class="verified-title">CANDIDAT VÉRIFIÉ — Aminata Ouédraogo</div>
+        <div class="verified-addr" id="rec-addr">0xA3F2…9B01</div>
+        <div class="verified-chips">
+          <div class="verified-chip">Identité blockchain confirmée</div>
+          <div class="verified-chip" id="chip-badges">5 badges certifiés</div>
+          <div class="verified-chip">0 révoqué</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Badges vérifiés en temps réel</div>
+    <div class="badge-list" id="rec-badges">
+      <div class="badge-item">
+        <div class="badge-icon" style="background:rgba(0,229,160,.12)">💻</div>
+        <div class="badge-info">
+          <div class="badge-name">React.js <span class="badge-level level-expert" style="font-size:10px">Expert</span></div>
+          <div class="badge-sub">TechBF Institute</div>
+        </div>
+        <div class="badge-meta">
+          <div class="badge-date">09/04/2026</div>
+          <div class="tx-hash" onclick="toast('Hash vérifié sur Etherscan','🔗')">0x8A2F… ↗</div>
+        </div>
+      </div>
+      <div class="badge-item">
+        <div class="badge-icon" style="background:rgba(59,130,246,.12)">📱</div>
+        <div class="badge-info">
+          <div class="badge-name">Flutter <span class="badge-level level-inter" style="font-size:10px">Interméd.</span></div>
+          <div class="badge-sub">BootcampBF</div>
+        </div>
+        <div class="badge-meta">
+          <div class="badge-date">15/03/2026</div>
+          <div class="tx-hash" onclick="toast('Hash vérifié sur Etherscan','🔗')">0x4C7D… ↗</div>
+        </div>
+      </div>
+      <div class="badge-item">
+        <div class="badge-icon" style="background:rgba(168,85,247,.12)">🎨</div>
+        <div class="badge-info">
+          <div class="badge-name">Figma <span class="badge-level level-inter" style="font-size:10px">Interméd.</span></div>
+          <div class="badge-sub">DesignHub Ouaga</div>
+        </div>
+        <div class="badge-meta">
+          <div class="badge-date">02/02/2026</div>
+          <div class="tx-hash" onclick="toast('Hash vérifié sur Etherscan','🔗')">0x1E9B… ↗</div>
+        </div>
+      </div>
+      <div class="badge-item">
+        <div class="badge-icon" style="background:rgba(245,158,11,.12)">🐍</div>
+        <div class="badge-info">
+          <div class="badge-name">Python <span class="badge-level level-debut" style="font-size:10px">Débutant</span></div>
+          <div class="badge-sub">DataSchool BF</div>
+        </div>
+        <div class="badge-meta">
+          <div class="badge-date">10/01/2026</div>
+          <div class="tx-hash" onclick="toast('Hash vérifié sur Etherscan','🔗')">0x6F3A… ↗</div>
+        </div>
+      </div>
+      <div class="badge-item">
+        <div class="badge-icon" style="background:rgba(239,68,68,.12)">🔒</div>
+        <div class="badge-info">
+          <div class="badge-name">OWASP <span class="badge-level level-debut" style="font-size:10px">Débutant</span></div>
+          <div class="badge-sub">CyberBF Academy</div>
+        </div>
+        <div class="badge-meta">
+          <div class="badge-date">05/12/2025</div>
+          <div class="tx-hash" onclick="toast('Hash vérifié sur Etherscan','🔗')">0x2D8C… ↗</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+      <button class="btn btn-primary" onclick="toast('Rapport PDF téléchargé','📄')">⬇ Télécharger rapport PDF</button>
+      <button class="btn btn-ghost" onclick="toast('Email de contact ouvert','✉️')">✉ Contacter le candidat</button>
+    </div>
+  </div>
+
+  <div id="rec-empty" style="text-align:center;padding:60px 20px;color:var(--text3)">
+    <div style="font-size:48px;margin-bottom:16px;">🔍</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--text2);margin-bottom:8px;">Aucune recherche effectuée</div>
+    <div style="font-size:14px;">Entrez une adresse wallet ou URL portfolio pour vérifier les badges</div>
+  </div>
+</div>
+
+<!-- MODAL NFT PREVIEW -->
+<div class="modal-overlay" id="modal-nft">
+  <div class="modal">
+    <button class="modal-close" onclick="fermerModal('modal-nft')">✕</button>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;margin-bottom:18px;">Aperçu du badge NFT</div>
+    <div class="nft-preview">
+      <div class="nft-badge-icon" id="nft-icon">💻</div>
+      <div class="nft-title" id="nft-name">Développement Web</div>
+      <div class="nft-org">TechBF Institute — Ouagadougou</div>
+      <div id="nft-level-badge" class="badge-level level-expert" style="display:inline-block;margin-bottom:14px">Expert</div>
+      <br>
+      <div class="nft-chain">ERC-721 · Sepolia · 0xTechBF…1234</div>
+    </div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:16px;">
+      Compétence : <span id="nft-skill" style="color:var(--text)">React.js — Création d'application SPA</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" style="flex:1" onclick="fermerModal('modal-nft');emettreBlockchain()">⬡ Émettre maintenant</button>
+      <button class="btn btn-ghost" onclick="fermerModal('modal-nft')">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SHARE -->
+<div class="modal-overlay" id="modal-share">
+  <div class="modal">
+    <button class="modal-close" onclick="fermerModal('modal-share')">✕</button>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;margin-bottom:6px;">Partager mon portfolio</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:4px;">Partagez votre lien de vérification sécurisé</div>
+    <div class="share-link-box" id="share-link" onclick="copierLien()">https://skillbadge.bf/v/0xA3F2-9B01-verify</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">Cliquez pour copier • Lien valide 30 jours</div>
+    <hr class="divider">
+    <div style="text-align:center">
+      <div class="qr-placeholder">⬛</div>
+      <div style="font-size:12px;color:var(--text3)">Scanner pour accéder au portfolio</div>
+    </div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-primary" style="flex:1" onclick="copierLien()">📋 Copier le lien</button>
+      <button class="btn btn-ghost" onclick="toast('Envoyé par email !','✉️');fermerModal('modal-share')">✉ Envoyer</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon">✓</span>
+  <span id="toast-msg">Action effectuée</span>
+</div>
+
+<script>
+// ── STATE ──
+const appState = {
+  badgesCount: 5,
+  validesCount: 5,
+  score: 78,
+  emissionsCount: 47,
+  apprenants: 32,
+  actifs: 44,
+  newBadges: []
+};
+
+// ── NAV ──
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  const tabs = ['formateur','apprenant','recruteur'];
+  document.querySelectorAll('.nav-tab')[tabs.indexOf(view)].classList.add('active');
+}
+
+// ── ÉMETTRE BLOCKCHAIN ──
+function emettreBlockchain() {
+  const domaine = document.getElementById('f-domaine').value;
+  const niveau = document.getElementById('f-niveau').value;
+  const competence = document.getElementById('f-competence').value || 'Compétence non précisée';
+  const apprenant = document.getElementById('f-apprenant').value;
+
+  if (!apprenant) {
+    toast('Veuillez renseigner l\'apprenant', '⚠️');
+    return;
+  }
+
+  const btn = document.getElementById('btn-emit');
+  btn.textContent = '⬡ Émission en cours…';
+  btn.disabled = true;
+  btn.style.opacity = '.7';
+
+  setTimeout(() => {
+    // Generate fake TX hash
+    const txHash = '0x' + Math.random().toString(16).slice(2,8).toUpperCase() + '…';
+    const date = new Date().toLocaleDateString('fr-FR');
+
+    // Update formateur stats
+    appState.emissionsCount++;
+    appState.apprenants = Math.min(appState.apprenants + 1, 99);
+    appState.actifs++;
+    document.getElementById('stat-emis').textContent = appState.emissionsCount;
+    document.getElementById('stat-apprenants').textContent = appState.apprenants;
+    document.getElementById('stat-actifs').textContent = appState.actifs;
+
+    // Add to emissions list
+    const icons = {'Développement Web':'💻','Développement Mobile':'📱','Design UI/UX':'🎨','Data & IA':'🐍','Cybersécurité':'🔒','DevOps':'⚙️','Base de données':'🗄️'};
+    const levelClass = {'Expert':'level-expert','Intermédiaire':'level-inter','Débutant':'level-debut'};
+    const compName = competence.split('—')[0].trim() || domaine;
+    const nom = apprenant.includes('@') ? apprenant.split('@')[0] : apprenant.slice(0,10) + '…';
+
+    const emissionEl = document.createElement('div');
+    emissionEl.className = 'emission-item';
+    emissionEl.style.animation = 'fadeUp .3s ease';
+    emissionEl.innerHTML = `
+      <div class="emission-dot"></div>
+      <div class="emission-text"><strong>${compName}</strong> <span class="badge-level ${levelClass[niveau]}">${niveau}</span> → ${nom}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        <div class="emission-date">${date}</div>
+        <div class="emission-link" onclick="toast('TX: ${txHash} copiée','✓')">Voir TX ↗</div>
+      </div>`;
+    const list = document.getElementById('emissions-list');
+    list.insertBefore(emissionEl, list.firstChild);
+
+    // Add to apprenant portfolio
+    addBadgeToPortfolio(domaine, niveau, competence, date, txHash, icons[domaine] || '🏅');
+
+    btn.textContent = '⬡ Émettre sur la Blockchain';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.classList.add('btn-emitting');
+    setTimeout(() => btn.classList.remove('btn-emitting'), 800);
+
+    toast(`Badge ${compName} émis avec succès ! TX: ${txHash}`, '⬡');
+
+    // Reset form
+    document.getElementById('f-competence').value = '';
+    document.getElementById('f-projet').value = '';
+    document.getElementById('f-apprenant').value = '';
+  }, 1800);
+}
+
+function addBadgeToPortfolio(domaine, niveau, competence, date, txHash, icon) {
+  const levelClass = {'Expert':'level-expert','Intermédiaire':'level-inter','Débutant':'level-debut'};
+  const barPct = {'Expert':'100%','Intermédiaire':'65%','Débutant':'30%'};
+  const barColor = {'Expert':'var(--expert)','Intermédiaire':'var(--inter)','Débutant':'var(--debut)'};
+  const bgMap = {'💻':'rgba(0,229,160,.12)','📱':'rgba(59,130,246,.12)','🎨':'rgba(168,85,247,.12)','🐍':'rgba(245,158,11,.12)','🔒':'rgba(239,68,68,.12)','⚙️':'rgba(100,100,255,.12)','🗄️':'rgba(200,100,0,.12)','🏅':'rgba(0,200,200,.12)'};
+
+  // Add to skill grid
+  const grid = document.getElementById('skill-grid');
+  const skillEl = document.createElement('div');
+  skillEl.className = 'skill-card';
+  skillEl.style.animation = 'fadeUp .4s ease';
+  skillEl.innerHTML = `
+    <div class="skill-card-top"><span class="badge-level ${levelClass[niveau]}">${niveau === 'Intermédiaire' ? 'Interméd.' : niveau}</span></div>
+    <div class="skill-title">${domaine}</div>
+    <div class="skill-sub">${competence.slice(0,40)}</div>
+    <div class="skill-bar"><div class="skill-bar-fill" style="width:${barPct[niveau]};background:${barColor[niveau]}"></div></div>`;
+  grid.appendChild(skillEl);
+
+  // Add to badge list
+  const badgeList = document.getElementById('apprenant-badges');
+  const badgeEl = document.createElement('div');
+  badgeEl.className = 'badge-item';
+  badgeEl.style.animation = 'fadeUp .4s ease';
+  badgeEl.innerHTML = `
+    <div class="badge-icon" style="background:${bgMap[icon]}">${icon}</div>
+    <div class="badge-info">
+      <div class="badge-name">${competence.split('—')[0].trim()} <span class="badge-level ${levelClass[niveau]}" style="font-size:10px">${niveau}</span></div>
+      <div class="badge-sub">${document.getElementById('f-domaine') ? 'TechBF Institute' : ''}</div>
+    </div>
+    <div class="badge-meta">
+      <div class="badge-date">${date}</div>
+      <div class="tx-hash" onclick="toast('TX: ${txHash} copiée','✓')">${txHash}</div>
+    </div>`;
+  badgeList.insertBefore(badgeEl, badgeList.firstChild);
+
+  // Add to recruiter
+  const recList = document.getElementById('rec-badges');
+  const recEl = document.createElement('div');
+  recEl.className = 'badge-item';
+  recEl.style.animation = 'fadeUp .4s ease';
+  recEl.innerHTML = `
+    <div class="badge-icon" style="background:${bgMap[icon]}">${icon}</div>
+    <div class="badge-info">
+      <div class="badge-name">${competence.split('—')[0].trim()} <span class="badge-level ${levelClass[niveau]}" style="font-size:10px">${niveau}</span></div>
+      <div class="badge-sub">TechBF Institute</div>
+    </div>
+    <div class="badge-meta">
+      <div class="badge-date">${date}</div>
+      <div class="tx-hash" onclick="toast('Hash vérifié sur Etherscan','🔗')">${txHash} ↗</div>
+    </div>`;
+  recList.insertBefore(recEl, recList.firstChild);
+
+  // Update counts
+  appState.badgesCount++;
+  appState.validesCount++;
+  appState.score = Math.min(100, appState.score + 3);
+  document.getElementById('stat-badges-count').textContent = appState.badgesCount;
+  document.getElementById('stat-valides-count').textContent = appState.validesCount;
+  document.getElementById('score-display').innerHTML = appState.score + '<span style="font-size:16px;color:var(--text3)">/100</span>';
+  document.getElementById('chip-badges').textContent = appState.badgesCount + ' badges certifiés';
+}
+
+// ── NFT PREVIEW ──
+const domIcons = {'Développement Web':'💻','Développement Mobile':'📱','Design UI/UX':'🎨','Data & IA':'🐍','Cybersécurité':'🔒','DevOps':'⚙️','Base de données':'🗄️'};
+const lvlClass = {'Expert':'level-expert','Intermédiaire':'level-inter','Débutant':'level-debut'};
+
+function previewNFT() {
+  const dom = document.getElementById('f-domaine').value;
+  const niv = document.getElementById('f-niveau').value;
+  const ski = document.getElementById('f-competence').value || 'React.js — Création d\'application SPA';
+  document.getElementById('nft-icon').textContent = domIcons[dom] || '🏅';
+  document.getElementById('nft-name').textContent = dom;
+  document.getElementById('nft-skill').textContent = ski;
+  const lvlEl = document.getElementById('nft-level-badge');
+  lvlEl.textContent = niv;
+  lvlEl.className = 'badge-level ' + (lvlClass[niv] || 'level-expert');
+  ouvrir('modal-nft');
+}
+
+// ── SHARE ──
+function ouvrirShare() { ouvrir('modal-share'); }
+function showQR() { ouvrir('modal-share'); }
+function copierLien() {
+  const link = document.getElementById('share-link').textContent;
+  navigator.clipboard?.writeText(link).catch(()=>{});
+  toast('Lien copié dans le presse-papiers !', '📋');
+}
+
+// ── VERIFIER ──
+function verifier() {
+  const val = document.getElementById('rec-input').value.trim();
+  if (!val) { toast('Entrez une adresse ou un lien', '⚠️'); return; }
+  document.getElementById('rec-empty').style.display = 'none';
+  const res = document.getElementById('verified-result');
+  res.style.display = 'none';
+  setTimeout(() => {
+    res.style.display = 'block';
+    toast('Vérification blockchain réussie', '✓');
+  }, 900);
+}
+
+// ── MODALS ──
+function ouvrir(id) { document.getElementById(id).classList.add('open'); }
+function fermerModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if(e.target === o) o.classList.remove('open'); });
+});
+
+// ── TOAST ──
+let toastTimer;
+function toast(msg, icon='✓') {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  document.getElementById('toast-icon').textContent = icon;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// Init: show empty recruiter
+document.getElementById('rec-empty').style.display = 'block';
+document.getElementById('verified-result').style.display = 'none';
+</script>
+</body>
+</html>
